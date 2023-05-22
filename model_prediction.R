@@ -2,9 +2,9 @@ require(tidyverse)
 require(httr)
 
 
-# Get weather forecast data by cities
+# Forecast data by cities
 get_weather_forecaset_by_cities <- function(city_names){
-  # Create some empty vectors to hold data temporarily
+  # Vectors to hold data temporarily
   city <- c()
   weather <- c()
   temperature <- c()
@@ -17,7 +17,7 @@ get_weather_forecaset_by_cities <- function(city_names){
   weather_labels<-c()
   weather_details_labels<-c()
   
-  # Get 5-days forecast data for each city
+  # 5-days forecast data for each city
   for (city_name in city_names){
     url_get='https://api.openweathermap.org/data/2.5/forecast'
     # Replace the OpenWeatherAPI api_key with your own
@@ -28,11 +28,11 @@ get_weather_forecaset_by_cities <- function(city_names){
     results <- json_list$list
     
     for(result in results) {
-      # Get weather data and append them to vectors
+      # Gets weather data and append them to vectors
       city <- c(city, city_name)
       weather <- c(weather, result$weather[[1]]$main)
       
-      # Get predictor variables
+      # Gets predictor variables
       temperature <- c(temperature, result$main$temp)
       visibility <- c(visibility, result$visibility)
       humidity <- c(humidity, result$main$humidity)
@@ -52,13 +52,13 @@ get_weather_forecaset_by_cities <- function(city_names){
         season <- "AUTUMN"
       else
         season <- "WINTER"
-      # Add a HTML label to be shown on Leaflet
+      # Adds a HTML label to be shown on Leaflet
       weather_label <- paste(sep = "",
                              "<b><a href=''>",
                              city_name, 
                              "</a></b>", "</br>", 
                              "<b>", result$weather[[1]]$main, "</b></br>")
-      # Add a detailed HTML label to be shown on Leaflet
+      # Adds a detailed HTML label to be shown on Leaflet
       weather_detail_label <- paste(sep = "",
                                     "<b><a href=''>",
                                     city_name, 
@@ -76,7 +76,7 @@ get_weather_forecaset_by_cities <- function(city_names){
       hours <- c(hours, hour)
     }
   }
-  # Create and return a tibble
+  # Created and return a tibble
   weather_df <- tibble(CITY_ASCII=city, WEATHER=weather, 
                        TEMPERATURE=temperature,
                        VISIBILITY=visibility, 
@@ -88,7 +88,7 @@ get_weather_forecaset_by_cities <- function(city_names){
   
 }
 
-# Load a saved regression model (variables and coefficients) from csv
+# Loaded a saved regression model (variables and coefficients) from csv
 load_saved_model <- function(model_name){
   model <- read_csv(model_name)
   model <- model %>% 
@@ -98,20 +98,20 @@ load_saved_model <- function(model_name){
 }
 
 
-# Predict bike-sharing demand using a saved regression model
+# Predicted bike-sharing demand using a saved regression model
 predict_bike_demand <- function(TEMPERATURE, HUMIDITY, WIND_SPEED, VISIBILITY, SEASONS, HOURS){
   model <- load_saved_model("model.csv")
   weather_terms <- model['Intercept'] + TEMPERATURE*model['TEMPERATURE'] + HUMIDITY*model['HUMIDITY'] +
     WIND_SPEED*model['WIND_SPEED'] + VISIBILITY*model['VISIBILITY'] 
   season_terms <- c()
   hour_terms <- c()
-  # Calculate season related regression terms
+  # Calculated season related regression terms
   for(season in SEASONS) {
     season_term <- switch(season, 'SPRING'=model['SPRING'],'SUMMER'=model['SUMMER'],
                           'AUTUMN'=model['AUTUMN'], 'WINTER'=model['WINTER'])
     season_terms <- c(season_terms, season_term)
   }
-  # Calculate hour related regression terms
+  # Calculated hour related regression terms
   for(hour in HOURS){
     hour_term<- switch(as.character(hour),'0'=model['0'],'1'=model['1'],'2'=model['2'],'3'=model['3'],
                        '4'=model['4'],'5'=model['5'],'6'=model['6'],'7'=model['7'],
@@ -138,7 +138,7 @@ return(regression_terms)
 }
 
 
-# Define a bike-sharing demand level, used for leaflet visualization
+# Defines a bike-sharing demand level, used for leaflet visualization
 calculate_bike_prediction_level<- function(predictions) {
   levels <- c()
   for(prediction in predictions){
@@ -152,8 +152,8 @@ calculate_bike_prediction_level<- function(predictions) {
   return(levels)
 }
 
-# Generate a data frame containing weather forecasting and bike prediction data
-# Generate a data frame containg weather forecasting and bike prediction data
+# Generated a data frame containing weather forecasting and bike prediction data
+# Generated a data frame containg weather forecasting and bike prediction data
 generate_city_weather_bike_data <- function (){
   cities_df <- read_csv("selected_cities.csv")
   weather_df <- get_weather_forecaset_by_cities(cities_df$CITY_ASCII)
